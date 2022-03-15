@@ -50,7 +50,7 @@ namespace EcommerceCRUD
             services.AddScoped<IUserService, UserService>();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "EcommerceCRUD", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ColorsByTilewa", Version = "v1" });
             });
         }
 

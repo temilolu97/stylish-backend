@@ -43,7 +43,7 @@ namespace EcommerceCRUD.Controllers
                 Id=x.Id,
                 Name = x.Name,
                 Description = x.Description,
-                CategoryId = x.CategoryId,
+                Featured = x.Featured,
                 ImageUrl = String.Format("{0}://{1}{2}/Images/{3}", Request.Scheme, Request.Host, Request.PathBase,x.ImageUrl),
                 Price = x.Price,
                 DateCreated = x.DateCreated,
@@ -52,6 +52,31 @@ namespace EcommerceCRUD.Controllers
             })
                 .ToList();
             return products;
+        }
+
+        [HttpGet("featured-products")]
+        public ActionResult <IEnumerable<Product>> GetFeaturedProducts()
+        {
+            try
+            {
+                var result = _databaseContext.Products.Where(product => product.Featured == true);
+                if (result.Any())
+                {
+                    foreach (var item in result)
+                    {
+                        item.ImageUrl = String.Format("{0}://{1}{2}/Images/{3}", Request.Scheme, Request.Host, Request.PathBase, item.ImageUrl);
+                    }
+                    return Ok(result);
+                }
+
+                return NotFound();
+
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "Error retrieving data from the database");
+            }
         }
 
         // GET api/<ProductsController>/5
@@ -73,6 +98,7 @@ namespace EcommerceCRUD.Controllers
             {
                 //string[] stringFileName = UploadImage(request);
                 request.ImageUrl = await SaveImage(request.ImageFile);
+                request.DateCreated = DateTime.UtcNow;
                 _databaseContext.Products.Add(request);
                 _databaseContext.SaveChangesAsync();
 
@@ -103,8 +129,35 @@ namespace EcommerceCRUD.Controllers
             _databaseContext.SaveChanges();
         }
 
+        [AllowAnonymous]
+        [HttpGet("/search/{searchparam}")]
+        public ActionResult<IEnumerable<Product>> Search(string searchparam)
+        {
+            try
+            {
+                var result = _databaseContext.Products.Where(product => product.Name.ToLower().Contains(searchparam.ToLower()));
 
-        
+                if (result.Any())
+                {
+                    foreach (var item in result)
+                    {
+                        item.ImageUrl = String.Format("{0}://{1}{2}/Images/{3}", Request.Scheme, Request.Host, Request.PathBase, item.ImageUrl);
+                    }
+                    return Ok(result);
+                }
+
+                return NotFound();
+            }
+            catch (Exception)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                    "Error retrieving data from the database");
+            }
+        }
+
+
+
+
         [NonAction]
         public async Task<string> SaveImage(IFormFile image)
         {

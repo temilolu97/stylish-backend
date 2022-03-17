@@ -8,6 +8,7 @@ using EcommerceCRUD.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -46,6 +47,7 @@ namespace EcommerceCRUD.Controllers
                 Featured = x.Featured,
                 ImageUrl = String.Format("{0}://{1}{2}/Images/{3}", Request.Scheme, Request.Host, Request.PathBase,x.ImageUrl),
                 Price = x.Price,
+                Category = x.Category,
                 DateCreated = x.DateCreated,
                 DateUpdated = x.DateUpdated,
                 ImageFile = x.ImageFile,
@@ -114,8 +116,14 @@ namespace EcommerceCRUD.Controllers
         // PUT api/<ProductsController>/5
         [Authorize]
         [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        public void Put(int id, [FromBody] Product request)
         {
+        
+
+            var product = _databaseContext.Products.FirstOrDefault(prod => prod.Id == id);
+            if (product == null) throw new Exception("This category does not exist");
+            _databaseContext.Entry(request).State = EntityState.Modified;
+            _databaseContext.SaveChanges();
         }
 
         // DELETE api/<ProductsController>/5
